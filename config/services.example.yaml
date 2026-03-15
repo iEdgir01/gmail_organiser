@@ -1,0 +1,222 @@
+# Service Map — accounts.py
+# ─────────────────────────────────────────────────────────────────────────────
+# Copy this file to config/services.yaml and add entries for your own services.
+#
+# Maps an email domain (or domain fragment) to a friendly service name and
+# login URL. Used by accounts.py to build your account inventory.
+#
+# Lookup order (most-specific to least-specific):
+#   1. Exact domain match:   "mail.example.com"
+#   2. Parent domain match:  "example.com"
+#
+# If a domain is not listed here, accounts.py will auto-derive a best-guess
+# name and URL from the domain itself.
+# ─────────────────────────────────────────────────────────────────────────────
+
+services:
+
+  # ── Google ─────────────────────────────────────────────────────────────────
+  accounts.google.com:
+    name: Google
+    url: https://myaccount.google.com
+  google.com:
+    name: Google
+    url: https://myaccount.google.com
+  googleplay-noreply.google.com:
+    name: Google Play
+    url: https://play.google.com
+  cloudplatform-noreply.google.com:
+    name: Google Cloud
+    url: https://console.cloud.google.com
+
+  # ── Microsoft ──────────────────────────────────────────────────────────────
+  accountprotection.microsoft.com:
+    name: Microsoft
+    url: https://account.microsoft.com
+  microsoft.com:
+    name: Microsoft
+    url: https://account.microsoft.com
+
+  # ── Amazon / AWS ───────────────────────────────────────────────────────────
+  amazon.com:
+    name: Amazon
+    url: https://www.amazon.com/gp/css/homepage.html
+  amazonaws.com:
+    name: AWS
+    url: https://console.aws.amazon.com
+  costalerts.amazonaws.com:
+    name: AWS
+    url: https://console.aws.amazon.com
+  no-reply-aws.amazon.com:
+    name: AWS
+    url: https://console.aws.amazon.com
+
+  # ── PayPal ─────────────────────────────────────────────────────────────────
+  service.paypal.com:
+    name: PayPal
+    url: https://www.paypal.com
+  intl.paypal.com:
+    name: PayPal
+    url: https://www.paypal.com
+  paypal.com:
+    name: PayPal
+    url: https://www.paypal.com
+
+  # ── LinkedIn ───────────────────────────────────────────────────────────────
+  linkedin.com:
+    name: LinkedIn
+    url: https://www.linkedin.com
+  em.linkedin.com:
+    name: LinkedIn
+    url: https://www.linkedin.com
+  e.linkedin.com:
+    name: LinkedIn
+    url: https://www.linkedin.com
+  jobalerts-noreply.linkedin.com:
+    name: LinkedIn
+    url: https://www.linkedin.com
+  messages-noreply.linkedin.com:
+    name: LinkedIn
+    url: https://www.linkedin.com
+
+  # ── GitHub ─────────────────────────────────────────────────────────────────
+  github.com:
+    name: GitHub
+    url: https://github.com/login
+
+  # ── OpenAI / Claude ────────────────────────────────────────────────────────
+  tm.openai.com:
+    name: OpenAI
+    url: https://platform.openai.com
+  openai.com:
+    name: OpenAI
+    url: https://platform.openai.com
+  email.claude.com:
+    name: Claude (Anthropic)
+    url: https://claude.ai
+
+  # ── Steam / Gaming ─────────────────────────────────────────────────────────
+  steampowered.com:
+    name: Steam
+    url: https://store.steampowered.com/login
+  epicgames.com:
+    name: Epic Games
+    url: https://www.epicgames.com/id/login
+  email3.gog.com:
+    name: GOG.com
+    url: https://www.gog.com/login
+  gog.com:
+    name: GOG.com
+    url: https://www.gog.com/login
+  rockstargames.com:
+    name: Rockstar Games
+    url: https://socialclub.rockstargames.com
+  xbox.com:
+    name: Xbox
+    url: https://account.xbox.com
+
+  # ── Streaming / Entertainment ──────────────────────────────────────────────
+  twitch.tv:
+    name: Twitch
+    url: https://www.twitch.tv/login
+  netflix.com:
+    name: Netflix
+    url: https://www.netflix.com/login
+  spotify.com:
+    name: Spotify
+    url: https://accounts.spotify.com/login
+  plex.tv:
+    name: Plex
+    url: https://app.plex.tv
+  mailout.plex.tv:
+    name: Plex
+    url: https://app.plex.tv
+
+  # ── Social ─────────────────────────────────────────────────────────────────
+  facebookmail.com:
+    name: Facebook
+    url: https://www.facebook.com/login
+  twitter.com:
+    name: Twitter/X
+    url: https://twitter.com/login
+  instagram.com:
+    name: Instagram
+    url: https://www.instagram.com/accounts/login
+  reddit.com:
+    name: Reddit
+    url: https://www.reddit.com/login
+  redditmail.com:
+    name: Reddit
+    url: https://www.reddit.com/login
+
+  # ── Dev Tools ──────────────────────────────────────────────────────────────
+  gitkraken.com:
+    name: GitKraken
+    url: https://app.gitkraken.com
+  mail.cursor.com:
+    name: Cursor
+    url: https://www.cursor.com
+  cursor.com:
+    name: Cursor
+    url: https://www.cursor.com
+  tailscale.com:
+    name: Tailscale
+    url: https://login.tailscale.com
+  zohoaccounts.com:
+    name: Zoho
+    url: https://accounts.zoho.com
+  ui.com:
+    name: Ubiquiti
+    url: https://account.ui.com
+  lastpass.com:
+    name: LastPass
+    url: https://www.lastpass.com/login
+  1password.com:
+    name: 1Password
+    url: https://my.1password.com
+
+  # ── Jobs ───────────────────────────────────────────────────────────────────
+  jobalert.indeed.com:
+    name: Indeed
+    url: https://www.indeed.com/account/login
+  match.indeed.com:
+    name: Indeed
+    url: https://www.indeed.com/account/login
+  indeed.com:
+    name: Indeed
+    url: https://www.indeed.com/account/login
+
+  # ── Shopping ───────────────────────────────────────────────────────────────
+  ebay.com:
+    name: eBay
+    url: https://www.ebay.com/signin
+
+  # ── Education ──────────────────────────────────────────────────────────────
+  e.udemymail.com:
+    name: Udemy
+    url: https://www.udemy.com/join/login-popup
+  udemymail.com:
+    name: Udemy
+    url: https://www.udemy.com/join/login-popup
+  udemy.com:
+    name: Udemy
+    url: https://www.udemy.com/join/login-popup
+
+  # ── Lifestyle ──────────────────────────────────────────────────────────────
+  chess.com:
+    name: Chess.com
+    url: https://www.chess.com/login
+  duolingo.com:
+    name: Duolingo
+    url: https://www.duolingo.com/login
+  mail.goodreads.com:
+    name: Goodreads
+    url: https://www.goodreads.com/user/sign_in
+  goodreads.com:
+    name: Goodreads
+    url: https://www.goodreads.com/user/sign_in
+
+  # ── Password Managers ──────────────────────────────────────────────────────
+  windscribe.com:
+    name: Windscribe VPN
+    url: https://windscribe.com/login

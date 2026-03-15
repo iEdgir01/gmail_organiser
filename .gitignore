@@ -1,0 +1,32 @@
+# ── Credentials & tokens ─────────────────────────────────────────────────────
+config/client_secret*.json
+data/token.json
+
+# ── Personal config (copy from *.example.yaml to get started) ────────────────
+config/rules.yaml
+config/services.yaml
+config/contacts.yaml
+
+# ── Mailbox data (large, personal) ───────────────────────────────────────────
+data/
+output/
+
+# ── Python ───────────────────────────────────────────────────────────────────
+__pycache__/
+*.py[cod]
+*.pyo
+.venv/
+venv/
+env/
+.env
+
+# ── OS ───────────────────────────────────────────────────────────────────────
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# ── Editors ──────────────────────────────────────────────────────────────────
+.vscode/
+.idea/
+*.swp
+*.swo

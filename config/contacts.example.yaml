@@ -1,0 +1,231 @@
+# Contact Directory — email_update.py
+# ─────────────────────────────────────────────────────────────────────────────
+# Copy this file to config/contacts.yaml and customise it for your services.
+#
+# Used by email_update.py to generate a checklist when changing your email
+# address across all your online accounts.
+#
+# Each entry key is the service NAME (must match what accounts.py outputs).
+# Fields:
+#   method     — how to update the email address:
+#                  "settings" → self-service via account settings page
+#                  "portal"   → log in to the service portal
+#                  "email"    → send a support email (use the template)
+#                  "phone"    → must call customer support
+#   login_url  — direct URL to the email-change settings page (for settings/portal)
+#   contact    — support email address (for email/phone methods)
+#   notes      — any extra steps or gotchas
+# ─────────────────────────────────────────────────────────────────────────────
+
+contacts:
+
+  # ── Google ─────────────────────────────────────────────────────────────────
+  Google:
+    method: settings
+    login_url: https://myaccount.google.com/email
+    notes: Add new address, verify it, then change primary
+
+  Google Play:
+    method: settings
+    login_url: https://myaccount.google.com/email
+    notes: Linked to Google Account
+
+  Google Cloud:
+    method: settings
+    login_url: https://myaccount.google.com/email
+    notes: Linked to Google Account
+
+  # ── Microsoft ──────────────────────────────────────────────────────────────
+  Microsoft:
+    method: settings
+    login_url: https://account.microsoft.com/account/manageaccounts
+    notes: Add alias first, then set as primary
+
+  # ── Amazon / AWS ───────────────────────────────────────────────────────────
+  Amazon:
+    method: settings
+    login_url: https://www.amazon.com/gp/css/account/info/view.html
+    notes: Account > Login & security
+
+  AWS:
+    method: settings
+    login_url: https://console.aws.amazon.com/billing/home#/account
+    notes: Update root account email in Account Settings
+
+  # ── PayPal ─────────────────────────────────────────────────────────────────
+  PayPal:
+    method: settings
+    login_url: https://www.paypal.com/myaccount/settings/
+    notes: Settings > Email — add new, verify, set primary
+
+  # ── LinkedIn ───────────────────────────────────────────────────────────────
+  LinkedIn:
+    method: settings
+    login_url: https://www.linkedin.com/psettings/email-addresses
+    notes: Add new email, verify, make primary
+
+  # ── GitHub ─────────────────────────────────────────────────────────────────
+  GitHub:
+    method: settings
+    login_url: https://github.com/settings/emails
+    notes: Add new address, verify it, then set as primary
+
+  # ── OpenAI / Claude ────────────────────────────────────────────────────────
+  OpenAI:
+    method: settings
+    login_url: https://platform.openai.com/account/profile
+    notes: Update in profile settings
+
+  Claude (Anthropic):
+    method: settings
+    login_url: https://claude.ai/settings
+    notes: Update in account settings
+
+  # ── Gaming ─────────────────────────────────────────────────────────────────
+  Steam:
+    method: settings
+    login_url: https://store.steampowered.com/account/emailoptout
+    notes: Steam Guard confirmation required — allow up to 3 days
+
+  Epic Games:
+    method: settings
+    login_url: https://www.epicgames.com/account/personal
+    notes: Account > Personal > Email
+
+  GOG.com:
+    method: settings
+    login_url: https://www.gog.com/en/account/settings
+    notes: Update in Account Settings
+
+  Rockstar Games:
+    method: settings
+    login_url: https://socialclub.rockstargames.com/settings/account
+    notes: Update in Social Club Account Settings
+
+  Twitch:
+    method: settings
+    login_url: https://www.twitch.tv/settings/security
+    notes: Settings > Security and Privacy > Email
+
+  Xbox:
+    method: settings
+    login_url: https://account.microsoft.com/account/manageaccounts
+    notes: Linked to Microsoft Account
+
+  Humble Bundle:
+    method: settings
+    login_url: https://www.humblebundle.com/account/keys
+    notes: Account > Settings > Email
+
+  # ── Streaming / Entertainment ──────────────────────────────────────────────
+  Netflix:
+    method: settings
+    login_url: https://www.netflix.com/account
+    notes: Account > Membership and billing > Email
+
+  Spotify:
+    method: settings
+    login_url: https://www.spotify.com/account/profile/
+    notes: Account > Edit profile > Email
+
+  Plex:
+    method: settings
+    login_url: https://app.plex.tv/desktop/#!/account
+    notes: Plex > Account > Email Address
+
+  # ── Social ─────────────────────────────────────────────────────────────────
+  Facebook:
+    method: settings
+    login_url: https://www.facebook.com/settings?tab=account
+    notes: Settings > General > Contact > Email
+
+  Twitter/X:
+    method: settings
+    login_url: https://twitter.com/settings/email
+    notes: Settings > Your account > Account information > Email
+
+  Instagram:
+    method: settings
+    login_url: https://www.instagram.com/accounts/edit/
+    notes: Edit Profile > Email
+
+  Reddit:
+    method: settings
+    login_url: https://www.reddit.com/settings/account
+    notes: Settings > Account > Email address
+
+  # ── Dev Tools ──────────────────────────────────────────────────────────────
+  GitKraken:
+    method: settings
+    login_url: https://app.gitkraken.com/account-info
+    notes: Update in Account Info
+
+  Cursor:
+    method: settings
+    login_url: https://www.cursor.com/settings
+    notes: Update in account settings
+
+  Tailscale:
+    method: settings
+    login_url: https://login.tailscale.com/admin/settings/account
+    notes: Admin > Settings > Account
+
+  Zoho:
+    method: settings
+    login_url: https://accounts.zoho.com
+    notes: Zoho Accounts > Profile > Email
+
+  Ubiquiti:
+    method: settings
+    login_url: https://account.ui.com/
+    notes: UI Account > Profile
+
+  LastPass:
+    method: settings
+    login_url: https://www.lastpass.com/vault
+    notes: Account Settings > Email
+
+  1Password:
+    method: settings
+    login_url: https://my.1password.com/profile
+    notes: My Profile > Email
+
+  # ── Jobs ───────────────────────────────────────────────────────────────────
+  Indeed:
+    method: settings
+    login_url: https://profile.indeed.com/
+    notes: Profile > Contact preferences > Email
+
+  # ── Shopping ───────────────────────────────────────────────────────────────
+  eBay:
+    method: settings
+    login_url: https://accountsettings.ebay.com/acct/
+    notes: Account Settings > Personal Info > Email
+
+  # ── Education ──────────────────────────────────────────────────────────────
+  Udemy:
+    method: settings
+    login_url: https://www.udemy.com/user/edit-profile/
+    notes: Account > Edit Profile
+
+  # ── Lifestyle ──────────────────────────────────────────────────────────────
+  Chess.com:
+    method: settings
+    login_url: https://www.chess.com/settings/account
+    notes: Settings > Account
+
+  Duolingo:
+    method: settings
+    login_url: https://www.duolingo.com/settings/account
+    notes: Settings > Account > Email
+
+  Goodreads:
+    method: settings
+    login_url: https://www.goodreads.com/user/edit
+    notes: Edit profile > Email settings
+
+  # ── VPN ────────────────────────────────────────────────────────────────────
+  Windscribe VPN:
+    method: settings
+    login_url: https://windscribe.com/account
+    notes: Account settings > Email

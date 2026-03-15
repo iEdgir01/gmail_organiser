@@ -1,0 +1,320 @@
+# Gmail Filter Classification Rules
+# ─────────────────────────────────────────────────────────────────────────────
+# Copy this file to config/rules.yaml and customise for your own mailbox.
+#
+# Each rule has four fields:
+#   pattern  — matched case-insensitively as a substring of the From address
+#   label    — Gmail label path (nested labels use forward slash: Finance/Bank)
+#   tier     — controls inbox behaviour (see below)
+#   name     — friendly display name shown in reports
+#
+# TIER GUIDE:
+#   1 — IMPORTANT   : apply label, keep in inbox        (billing, security, banking)
+#   2 — USEFUL      : apply label, move out of inbox    (gaming, social, newsletters)
+#   3 — LOW NOISE   : apply label, move out, leave unread (light newsletters, promos)
+#   4 — UNSUBSCRIBE : apply label, move out, mark read  (pure marketing noise)
+#
+# HOW TO FIND GAPS:
+#   After running fetch.py, run:
+#     python discover_senders.py
+#   This shows high-volume senders not yet covered by any rule.
+# ─────────────────────────────────────────────────────────────────────────────
+
+rules:
+
+  # ── TIER 1: IMPORTANT — label + keep inbox ───────────────────────────────
+
+  # Google Account security
+  - pattern: accounts.google.com
+    label: Accounts/Google
+    tier: 1
+    name: Google Account
+
+  - pattern: noreply-location-sharing@google.com
+    label: Accounts/Google
+    tier: 1
+    name: Google Location
+
+  - pattern: googleplay-noreply@google.com
+    label: Accounts/Google
+    tier: 1
+    name: Google Play
+
+  # Microsoft Account security
+  - pattern: accountprotection.microsoft.com
+    label: Accounts/Microsoft
+    tier: 1
+    name: Microsoft Account
+
+  # PayPal
+  - pattern: service.paypal.com
+    label: Finance/PayPal
+    tier: 1
+    name: PayPal
+
+  - pattern: intl.paypal.com
+    label: Finance/PayPal
+    tier: 1
+    name: PayPal
+
+  # Amazon / AWS billing & security
+  - pattern: no-reply-aws@amazon.com
+    label: Dev/AWS
+    tier: 1
+    name: AWS
+
+  - pattern: costalerts.amazonaws.com
+    label: Dev/AWS
+    tier: 1
+    name: AWS Budgets
+
+  - pattern: tax-and-invoicing
+    label: Dev/AWS
+    tier: 1
+    name: AWS Invoices
+
+  - pattern: cloudplatform-noreply@google.com
+    label: Dev/GCP
+    tier: 1
+    name: Google Cloud
+
+  # GitHub — security notifications & billing
+  - pattern: noreply@github.com
+    label: Dev/GitHub
+    tier: 1
+    name: GitHub
+
+  - pattern: notifications@github.com
+    label: Dev/GitHub
+    tier: 1
+    name: GitHub Notifications
+
+  # OpenAI / Claude billing & security
+  - pattern: noreply@tm.openai.com
+    label: Dev/OpenAI
+    tier: 1
+    name: OpenAI
+
+  - pattern: no-reply@email.claude.com
+    label: Dev/Claude
+    tier: 1
+    name: Claude
+
+  # Uber / ride-sharing receipts
+  - pattern: uber.com
+    label: Transport/Uber
+    tier: 1
+    name: Uber
+
+  # Password manager security alerts
+  - pattern: lastpass.com
+    label: Dev/LastPass
+    tier: 1
+    name: LastPass
+
+  - pattern: 1password.com
+    label: Dev/1Password
+    tier: 1
+    name: 1Password
+
+  # VPN billing & alerts
+  - pattern: windscribe.com
+    label: Dev/Windscribe
+    tier: 1
+    name: Windscribe VPN
+
+
+  # ── TIER 2: USEFUL — label + skip inbox ──────────────────────────────────
+
+  # LinkedIn — job alerts and social
+  - pattern: jobalerts-noreply@linkedin.com
+    label: Jobs/LinkedIn Alerts
+    tier: 2
+    name: LinkedIn Job Alerts
+
+  - pattern: jobs-listings@linkedin.com
+    label: Jobs/LinkedIn Alerts
+    tier: 2
+    name: LinkedIn Job Listings
+
+  - pattern: messages-noreply@linkedin.com
+    label: LinkedIn/Social
+    tier: 2
+    name: LinkedIn Social
+
+  - pattern: linkedin@em.linkedin.com
+    label: LinkedIn/Social
+    tier: 2
+    name: LinkedIn Ads
+
+  - pattern: linkedin@e.linkedin.com
+    label: LinkedIn/Social
+    tier: 2
+    name: LinkedIn
+
+  - pattern: updates-noreply@linkedin.com
+    label: LinkedIn/Social
+    tier: 2
+    name: LinkedIn Updates
+
+  - pattern: notifications-noreply@linkedin.com
+    label: LinkedIn/Social
+    tier: 2
+    name: LinkedIn Notifications
+
+  - pattern: invitations@linkedin.com
+    label: LinkedIn/Social
+    tier: 2
+    name: LinkedIn Invitations
+
+  # Indeed — job alerts
+  - pattern: donotreply@jobalert.indeed.com
+    label: Jobs/Indeed
+    tier: 2
+    name: Indeed Job Alerts
+
+  - pattern: donotreply@match.indeed.com
+    label: Jobs/Indeed
+    tier: 2
+    name: Indeed Matches
+
+  - pattern: alert@indeed.com
+    label: Jobs/Indeed
+    tier: 2
+    name: Indeed Alerts
+
+  # Social media
+  - pattern: facebookmail.com
+    label: Social/Facebook
+    tier: 2
+    name: Facebook
+
+  - pattern: twitter.com
+    label: Social/Twitter
+    tier: 2
+    name: Twitter/X
+
+  - pattern: mail.instagram.com
+    label: Social/Instagram
+    tier: 2
+    name: Instagram
+
+  # Gaming — Steam / Epic / GOG / Twitch
+  - pattern: noreply@steampowered.com
+    label: Gaming/Steam
+    tier: 2
+    name: Steam
+
+  - pattern: epicgames.com
+    label: Gaming/Epic
+    tier: 2
+    name: Epic Games
+
+  - pattern: newsletter@email3.gog.com
+    label: Gaming/GOG
+    tier: 2
+    name: GOG.COM
+
+  - pattern: email2.gog.com
+    label: Gaming/GOG
+    tier: 2
+    name: GOG.COM
+
+  - pattern: no-reply@twitch.tv
+    label: Gaming/Twitch
+    tier: 2
+    name: Twitch
+
+  - pattern: xbox.com
+    label: Gaming/Xbox
+    tier: 2
+    name: Xbox
+
+  # Entertainment / streaming
+  - pattern: netflix.com
+    label: Entertainment/Netflix
+    tier: 2
+    name: Netflix
+
+  - pattern: spotify.com
+    label: Entertainment/Spotify
+    tier: 2
+    name: Spotify
+
+  - pattern: noreply@plex.tv
+    label: Entertainment/Plex
+    tier: 2
+    name: Plex
+
+  - pattern: hello@mailout.plex.tv
+    label: Entertainment/Plex
+    tier: 2
+    name: Plex
+
+  # Reddit
+  - pattern: noreply@redditmail.com
+    label: Reddit
+    tier: 2
+    name: Reddit
+
+  # Dev tools
+  - pattern: no-reply@gitkraken.com
+    label: Dev/GitKraken
+    tier: 2
+    name: GitKraken
+
+  - pattern: team@mail.cursor.com
+    label: Dev/Cursor
+    tier: 2
+    name: Cursor
+
+  # eBay / shopping deals
+  - pattern: ebay.com
+    label: Shopping/eBay
+    tier: 2
+    name: eBay
+
+  # Humble Bundle (gaming deals — useful to track)
+  - pattern: mailer.humblebundle.com
+    label: Gaming/HumbleBundle
+    tier: 2
+    name: Humble Bundle
+
+
+  # ── TIER 3: LOW NOISE — label + skip inbox (leave unread) ────────────────
+
+  # Udemy promotional emails
+  - pattern: no-reply@e.udemymail.com
+    label: Education/Udemy
+    tier: 3
+    name: Udemy
+
+  # Newsletters / reads
+  - pattern: newsletter@tailscale.com
+    label: Newsletters/Tech
+    tier: 3
+    name: Tailscale
+
+  - pattern: pinterest.com
+    label: Newsletters/Lifestyle
+    tier: 3
+    name: Pinterest
+
+  - pattern: quora.com
+    label: Newsletters/Lifestyle
+    tier: 3
+    name: Quora
+
+  - pattern: duolingo.com
+    label: Newsletters/Learning
+    tier: 3
+    name: Duolingo
+
+
+  # ── TIER 4: UNSUBSCRIBE — label + skip inbox + mark read ─────────────────
+  # Add senders here that you want to review and unsubscribe from.
+  # Example:
+  # - pattern: promotions@some-spammy-brand.com
+  #   label: Unsubscribe Queue
+  #   tier: 4
+  #   name: Spammy Brand
