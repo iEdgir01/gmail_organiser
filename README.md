@@ -17,8 +17,8 @@ Useful if you:
 | `fetch.py` | Download all message headers | `--reset` wipe saved data and start fresh |
 | `discover_senders.py` | Show senders not covered by any rule | `--min N` min message count (default 3) · `--limit N` max results (default 100) |
 | `analyze.py` | Classify messages → `output/filter_rules.json` | — |
-| `apply_filters.py` | Create Gmail labels + filter rules via direct API | `--dry-run` preview only · `--labels-only` skip filter creation · `--forward-tier1` create separate forwarding-only filters for all Tier 1 patterns · `--reset-filters` delete all existing filters first · logs to `output/apply_filters.log` |
-| `export_filters_xml.py` | Export rules as Gmail-importable XML | `--forward-tier1` include separate Tier 1 forwarding entries in export · run `apply_filters.py --labels-only` first or imported filters will have no labels to apply |
+| `apply_filters.py` | Create Gmail labels + filter rules via gws CLI | `--dry-run` preview only · `--labels-only` skip filter creation · `--forward-to ADDRESS` forward all Tier 1 matches to `ADDRESS` · `--reset-filters` delete all existing filters first · logs to `output/apply_filters.log` |
+| `export_filters_xml.py` | Export rules as Gmail-importable XML | `--forward-to ADDRESS` include a forward action on all Tier 1 filters · run `apply_filters.py --labels-only` first or imported filters will have no labels to apply |
 | `backfill.py` | Retroactively label existing messages | `--dry-run` preview only · `--tier 1,2,3,4` restrict to specific tiers |
 | `mark_read.py` | Bulk mark messages as read | `--dry-run` count only · `--inbox-only` inbox only · `--label LABEL` restrict to one label |
 | `accounts.py` | Build account inventory from mailbox | `--min-count N` min emails per sender (default 1) · `--discovered-only` exclude already-ruled senders |
@@ -37,7 +37,7 @@ discover_senders.py → see which senders aren't yet covered by a rule
        ↓
 analyze.py          → classify senders using config/rules.yaml → output/filter_rules.json
        ↓
-apply_filters.py    → create Gmail labels + filter rules via direct Gmail API
+apply_filters.py    → create Gmail labels + filter rules via gws CLI
        ↓
 backfill.py         → retroactively label existing messages via batchModify API
        ↓
@@ -113,7 +113,7 @@ Classifies every message and writes `output/filter_rules.json` + a human-readabl
 ```bash
 python apply_filters.py --dry-run                         # preview first
 python apply_filters.py                                   # create labels + Gmail filter rules
-python apply_filters.py --forward-tier1                   # + create separate Tier 1 forwarding filters
+python apply_filters.py --forward-to you@newdomain.com    # forward all Tier 1 matches
 python apply_filters.py --reset-filters                   # delete all existing filters, then recreate
 ```
 
@@ -122,9 +122,9 @@ Output is also written to `output/apply_filters.log`.
 Alternatively, export as XML for manual import via the Gmail web UI:
 
 ```bash
-python apply_filters.py --labels-only                     # create labels first (required before XML import)
-python export_filters_xml.py                              # all tiers
-python export_filters_xml.py --forward-tier1              # include separate Tier 1 forwarding entries
+python apply_filters.py --labels-only                        # create labels first (required before XML import)
+python export_filters_xml.py                                 # all tiers
+python export_filters_xml.py --forward-to you@newdomain.com  # include forward action on Tier 1 filters
 ```
 
 Then: Gmail Settings → Filters and Blocked Addresses → **Import filters** → select `output/gmail_filters.xml`.
