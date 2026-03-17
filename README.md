@@ -1,3 +1,36 @@
+### gmail_organizer
+
+Thread-aware Gmail classification and rule generation pipeline.
+
+Pipeline stages:
+- `fetch.py` → writes `data/messages.jsonl`
+- `thread_builder.py` → writes `data/threads.json`
+- `thread_clusterer.py` → writes `data/clusters.json` and updates `data/cluster_stats.json`
+- (optional) `embedding_cluster_refiner.py` → refines `data/clusters.json`
+- `cluster_classifier.py` → writes `data/classified_clusters.json`
+- `rule_builder.py` → writes `data/filter_rules.json` and `data/rule_stats.json`
+- `gmail_filter_export.py` → exports XML to `data/gmail_filters.xml`
+- `gmail_backfill.py` → applies labels thread-wise using Gmail API
+
+Data model highlights:
+- **Message record** in `messages.jsonl` matches the spec (id, thread_id, from, domain, subject, subject_norm, body_excerpt, timestamp, labels).
+- **Thread summaries** in `threads.json` store sender domain, unique subjects, subject_norms, body_samples, and message_count.
+- **Clusters** in `clusters.json` are thread-level, grouped per sender domain by token-based subject keys; safety limits enforced.
+- **Classified clusters** in `classified_clusters.json` add `label`, `tier`, and `subject_patterns` from an LLM.
+- **Filter rules** in `filter_rules.json` merge clusters by `(sender_domain, label)` and include a `gmail_query` field.
+
+To run end-to-end (token-based only):
+1. `python -m gmail_organizer.fetch`
+2. `python -m gmail_organizer.thread_builder`
+3. `python -m gmail_organizer.thread_clusterer`
+4. `python -m gmail_organizer.cluster_classifier`
+5. `python -m gmail_organizer.rule_builder`
+6. `python -m gmail_organizer.gmail_filter_export`
+7. `python -m gmail_organizer.gmail_backfill`
+
+To enable embedding refinement between steps 3 and 4:
+- `python -m gmail_organizer.embedding_cluster_refiner`
+
 # gws-cli — Gmail Mailbox Organiser
 
 A command-line toolkit that analyses your Gmail mailbox, builds tiered filter rules, and retroactively labels everything — without touching a single email body.

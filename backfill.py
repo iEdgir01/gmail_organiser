@@ -4,18 +4,20 @@ backfill.py — Retroactively label all existing messages using headers.jsonl.
 Uses the direct Gmail API (token.json) for batchModify — 1000 IDs per call,
 processes large mailboxes in a few minutes.
 
-Tier logic (matches apply_filters.py):
+Tier logic (matches apply_labels.py):
   Tier 1 — add label only                              (leave in inbox)
   Tier 2 — add label + remove INBOX
   Tier 3 — add label + remove INBOX                    (leave as unread)
-  Tier 4 — add label + remove INBOX + remove UNREAD
+  Tier 4 — add label (Unsubscribe Queue) + remove INBOX + remove UNREAD
 
 Usage:
-    python backfill.py --dry-run        # count what would change, no API calls
-    python backfill.py                  # apply all tiers
-    python backfill.py --tier 2,3       # only move-out tiers (skip tier 1 & 4)
-    python backfill.py --tier 4         # only unsubscribe queue
-    python backfill.py --tier 1         # only add labels to important mail
+    python backfill.py --dry-run           # count what would change, no API calls
+    python backfill.py                     # apply all tiers
+    python backfill.py --tier 2,3          # only move-out tiers (skip tier 1)
+    python backfill.py --tier 4            # only unsubscribe queue
+    python backfill.py --tier 1            # only add labels to important mail
+    python backfill.py --cleanup-labels    # delete empty labels not in filter_rules.json
+    python backfill.py --cleanup-labels --dry-run  # preview which labels would be deleted
 """
 
 import json, argparse, time, sys, re, threading
@@ -110,13 +112,47 @@ def extract_addr(frm: str) -> str:
 
 
 def build_classifier(rules: list[dict]):
-    flat = [(pat, rule["label"], rule["tier"])
-            for rule in rules for pat in rule["patterns"]]
+    """
+    Returns a classify(addr, subject) function that applies two-pass matching:
 
-    def classify(addr: str):
-        for pat, label, tier in flat:
+      Pass 1 — subject-constrained rules: addr pattern AND a subject keyword must
+               match.  These rules have a "subject_patterns" list in the JSON.
+               Example: Finance/Bills for vodacom.co.za only fires when the subject
+               contains "invoice", "bill", "receipt", etc.
+
+      Pass 2 — unconstrained rules: addr pattern match only (no subject check).
+
+    Priority order ensures that broad domain patterns with subject constraints
+    never steal promotional emails that should be caught by a more-specific
+    unconstrained rule (e.g. noreply@vodacom.co.za → Unsubscribe Queue).
+    """
+    # Split into two lists for the two-pass check
+    constrained:   list[tuple] = []  # (pat, label, tier, subj_kw_tuple)
+    unconstrained: list[tuple] = []  # (pat, label, tier)
+
+    for rule in rules:
+        label    = rule["label"]
+        tier     = rule["tier"]
+        subj_kw  = tuple(kw.lower() for kw in rule.get("subject_patterns") or [])
+        for pat in rule["patterns"]:
+            if subj_kw:
+                constrained.append((pat, label, tier, subj_kw))
+            else:
+                unconstrained.append((pat, label, tier))
+
+    def classify(addr: str, subject: str = ""):
+        subj_lower = subject.lower()
+
+        # Pass 1: subject-constrained — both addr and subject must match
+        for pat, label, tier, subj_kw in constrained:
+            if pat in addr and any(kw in subj_lower for kw in subj_kw):
+                return label, tier
+
+        # Pass 2: unconstrained — addr match only
+        for pat, label, tier in unconstrained:
             if pat in addr:
                 return label, tier
+
         return None
 
     return classify
@@ -126,6 +162,66 @@ def build_classifier(rules: list[dict]):
 def get_label_ids(session, token_mgr) -> dict[str, str]:
     data = api_get(session, token_mgr, "labels")
     return {lbl["name"]: lbl["id"] for lbl in data.get("labels", [])}
+
+
+# ── Label cleanup ─────────────────────────────────────────────────────────────
+# System labels Gmail creates internally — never touch these
+SYSTEM_LABELS = {
+    "INBOX", "SENT", "TRASH", "SPAM", "STARRED", "IMPORTANT",
+    "CATEGORY_PERSONAL", "CATEGORY_SOCIAL", "CATEGORY_PROMOTIONS",
+    "CATEGORY_UPDATES", "CATEGORY_FORUMS", "CHAT", "DRAFT", "UNREAD",
+}
+
+def cleanup_labels(session, token_mgr, active_labels: set[str], dry_run: bool):
+    """
+    Delete user-created labels that:
+      - are NOT in active_labels (the current filter_rules.json set)
+      - have zero messages (messagesTotal == 0)
+    System labels are always skipped.
+    """
+    data = api_get(session, token_mgr, "labels")
+    all_labels = [l for l in data.get("labels", [])
+                  if l.get("type") == "user" and l["name"] not in SYSTEM_LABELS]
+
+    to_delete = []
+    keep      = []
+
+    for lbl in all_labels:
+        name = lbl["name"]
+        if name in active_labels:
+            keep.append(name)
+            continue
+        # Fetch label detail to get message count
+        detail = api_get(session, token_mgr, f"labels/{lbl['id']}")
+        msg_count = detail.get("messagesTotal", 0)
+        if msg_count == 0:
+            to_delete.append((name, lbl["id"]))
+        else:
+            print(f"  SKIP  {name}  ({msg_count} messages — not empty)")
+
+    if not to_delete:
+        print("  No empty orphan labels found.")
+        return
+
+    print(f"\n  {'Would delete' if dry_run else 'Deleting'} {len(to_delete)} empty label(s):")
+    for name, lid in sorted(to_delete):
+        print(f"    {name}")
+        if not dry_run:
+            url = f"{API_BASE}/labels/{lid}"
+            for attempt in range(3):
+                r = session.delete(url, headers={"Authorization": f"Bearer {token_mgr.token}"},
+                                   timeout=30)
+                if r.status_code in (200, 204):
+                    break
+                if r.status_code in (429, 500, 502, 503):
+                    time.sleep(2 ** attempt)
+                    continue
+                print(f"    WARNING: delete failed ({r.status_code}): {name}")
+                break
+            time.sleep(0.1)
+
+    if not dry_run:
+        print(f"\n  Deleted {len(to_delete)} label(s).")
 
 
 # ── Batch modify ──────────────────────────────────────────────────────────────
@@ -160,23 +256,31 @@ def batch_modify(session, token_mgr, msg_ids: list[str],
 def main():
     sys.stdout.reconfigure(encoding="utf-8", errors="replace")
     parser = argparse.ArgumentParser()
-    parser.add_argument("--dry-run", action="store_true")
-    parser.add_argument("--tier",    default="1,2,3,4",
+    parser.add_argument("--dry-run",        action="store_true")
+    parser.add_argument("--tier",           default="1,2,3,4",
                         help="Comma-separated tiers to run (default: 1,2,3,4)")
+    parser.add_argument("--cleanup-labels", action="store_true",
+                        help="Delete empty labels not present in filter_rules.json")
     args      = parser.parse_args()
     run_tiers = {int(t) for t in args.tier.split(",")}
 
     for f in [RULES_FILE, HDR_FILE]:
         if not f.exists():
             print(f"ERROR: {f.name} not found.")
-            if f == RULES_FILE:
-                print("  Run  python analyze.py  first.")
-            else:
-                print("  Run  python fetch.py  first.")
             return
 
     token_mgr = load_token()
     session   = requests.Session()
+
+    # ── Label cleanup (optional, runs before backfill) ────────────────────
+    if args.cleanup_labels:
+        rules_data    = json.loads(RULES_FILE.read_text(encoding="utf-8"))
+        active_labels = {r["label"] for r in rules_data["rules"]}
+        print("\n── Cleaning up empty orphan labels ──")
+        if args.dry_run:
+            print("DRY RUN — no labels will be deleted\n")
+        cleanup_labels(session, token_mgr, active_labels, args.dry_run)
+        print()
 
     # Load rules
     rules_data = json.loads(RULES_FILE.read_text(encoding="utf-8"))
@@ -199,8 +303,9 @@ def main():
     groups: dict = defaultdict(list)
     skipped = 0
     for msg in msgs:
-        addr   = extract_addr(msg.get("from", ""))
-        result = classify(addr)
+        addr    = extract_addr(msg.get("from", ""))
+        subject = msg.get("subject", "")
+        result  = classify(addr, subject)
         if result:
             label, tier = result
             if tier in run_tiers:
@@ -229,7 +334,7 @@ def main():
     label_map = get_label_ids(session, token_mgr)
     missing   = {lbl for (lbl, _) in groups if lbl not in label_map}
     if missing:
-        print(f"\nWARNING: {len(missing)} labels missing — run apply_filters.py first:")
+        print(f"\nWARNING: {len(missing)} labels missing — run apply_labels.py first:")
         for m in sorted(missing):
             print(f"  {m}")
         print("Aborting.")

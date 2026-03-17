@@ -1,7 +1,7 @@
 """
 fetch.py — Pull all Gmail message IDs then fetch From/Subject/List headers.
 
-Uses the Gmail API directly via token.json (from auth_setup.py).
+Uses the Gmail API directly via data/token.json (from auth_setup.py).
 Falls back to gws CLI subprocesses if token.json is not present.
 
 Direct API mode:  ~100+ messages/sec
@@ -16,10 +16,17 @@ Usage:
 
 Environment variables:
     GMAIL_CLIENT_SECRET  — path to client secret JSON (default: config/client_secret.json)
-    GWS_CMD              — path to gws CLI binary    (default: auto-detected from PATH)
+    GWS_CMD              — path to gws CLI binary (default: auto-detected from PATH)
 """
 
-import os, sys, json, time, argparse, threading, subprocess, shutil
+import os
+import sys
+import json
+import time
+import argparse
+import threading
+import subprocess
+import shutil
 from pathlib import Path
 from concurrent.futures import ThreadPoolExecutor, as_completed
 
@@ -34,22 +41,16 @@ IDS_FILE   = DATA_DIR / "message_ids.txt"
 HDR_FILE   = DATA_DIR / "headers.jsonl"
 TOKEN_FILE = DATA_DIR / "token.json"
 
-# Client secret: env var → config file (for auth refresh, not re-auth)
-CLIENT_SECRET = (
-    os.environ.get("GMAIL_CLIENT_SECRET")
-    or str(BASE / "config" / "client_secret.json")
-)
-
-# gws CLI: env var → PATH lookup → bare command fallback
+CLIENT_SECRET = os.environ.get("GMAIL_CLIENT_SECRET") or str(BASE / "config" / "client_secret.json")
 GWS_CMD = os.environ.get("GWS_CMD") or shutil.which("gws") or "gws"
 
-WORKERS_DIRECT = 50    # parallel threads for direct API
-WORKERS_GWS    = 50    # parallel subprocesses for gws fallback
-PAGE_SIZE      = 500
-SAVE_EVERY     = 500
-BASE_ENV       = {**os.environ, "PYTHONUTF8": "1"}
-SCOPES         = ["https://www.googleapis.com/auth/gmail.modify"]
-API_BASE       = "https://www.googleapis.com/gmail/v1/users/me"
+WORKERS_DIRECT = 50
+WORKERS_GWS    = 50
+PAGE_SIZE     = 500
+SAVE_EVERY    = 500
+BASE_ENV      = {**os.environ, "PYTHONUTF8": "1"}
+SCOPES        = ["https://www.googleapis.com/auth/gmail.modify"]
+API_BASE      = "https://www.googleapis.com/gmail/v1/users/me"
 
 
 # ── Auth ──────────────────────────────────────────────────────────────────────
@@ -93,22 +94,21 @@ def api_get(session: req_lib.Session, token_mgr: TokenManager,
     url = f"{API_BASE}/{path}"
     backoff = [1, 2, 5, 10]
     for attempt in range(retry):
-        r = session.get(url, headers=token_mgr.headers,
-                        params=params, timeout=30)
+        r = session.get(url, headers=token_mgr.headers, params=params, timeout=30)
         if r.status_code == 200:
             return r.json()
         if r.status_code == 401:
             with token_mgr._lock:
-                token_mgr._creds.expiry = None   # force refresh
+                token_mgr._creds.expiry = None
             continue
         if r.status_code in (429, 500, 502, 503):
-            time.sleep(backoff[min(attempt, len(backoff)-1)])
+            time.sleep(backoff[min(attempt, len(backoff) - 1)])
             continue
         break
     return {}
 
 
-# ── gws CLI fallback helpers ──────────────────────────────────────────────────
+# ── gws CLI fallback ──────────────────────────────────────────────────────────
 def gws(*args, params: dict = None, retry: int = 3) -> dict:
     cmd = [GWS_CMD, *args]
     if params:
@@ -201,7 +201,7 @@ def parse_record(data: dict) -> dict | None:
     }
 
 
-def fetch_all_headers(all_ids: list[str], token_mgr: TokenManager | None):
+def fetch_all_headers(all_ids: list[str], token_mgr: TokenManager | None) -> None:
     done_ids  = load_done_ids()
     remaining = [mid for mid in all_ids if mid not in done_ids]
     total     = len(all_ids)
@@ -221,7 +221,7 @@ def fetch_all_headers(all_ids: list[str], token_mgr: TokenManager | None):
     buf: list  = []
     errors     = 0
 
-    def flush(force=False):
+    def flush(force: bool = False) -> None:
         nonlocal buf
         if not buf:
             return
@@ -234,9 +234,7 @@ def fetch_all_headers(all_ids: list[str], token_mgr: TokenManager | None):
 
     def fetch_direct(mid: str) -> dict | None:
         session = req_lib.Session()
-        data = api_get(session, token_mgr, f"messages/{mid}", {
-            "format": "metadata",
-        })
+        data = api_get(session, token_mgr, f"messages/{mid}", {"format": "metadata"})
         return parse_record(data)
 
     def fetch_gws(mid: str) -> dict | None:
@@ -284,7 +282,7 @@ def fetch_all_headers(all_ids: list[str], token_mgr: TokenManager | None):
 
 
 # ── Main ──────────────────────────────────────────────────────────────────────
-def main():
+def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument("--reset", action="store_true", help="Wipe data and start fresh")
     args = parser.parse_args()
@@ -314,7 +312,7 @@ def main():
 
     n = sum(1 for _ in open(HDR_FILE, encoding="utf-8"))
     print(f"\n  {n:,} records saved to {HDR_FILE.name}")
-    print("\nNext:  python analyze.py")
+    print("\nNext:  python auto_classify.py")
 
 
 if __name__ == "__main__":
